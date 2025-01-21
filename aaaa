@@ -1,0 +1,26 @@
+import java.io.IOException;
+
+public class Main {
+    public static void main(String[] args) {
+        // 检查参数数量是否正确
+        if (args.length != 4) {
+            System.err.println("Usage: java Main <projectId> <bucketName> <objectName> <filePath>");
+            System.exit(1);
+        }
+
+        // 从命令行参数中获取值
+        String projectId = args[0];
+        String bucketName = args[1];
+        String objectName = args[2];
+        String filePath = args[3];
+
+        try {
+            // 调用UploadObject方法上传文件
+            UploadObject.uploadObject(projectId, bucketName, objectName, filePath);
+        } catch (IOException e) {
+            System.err.println("Failed to upload file: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+}

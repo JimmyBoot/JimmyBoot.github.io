@@ -1,11 +1,58 @@
-I am reaching out to request the necessary details for uploading files to your Google Cloud Storage (GCS) bucket.
+#!/bin/bash
 
-Could you please provide the following information:
+# 设置 GOOGLE_APPLICATION_CREDENTIALS 环境变量
+export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your-service-account-key.json"
 
-Project ID: The ID of the GCP project associated with the bucket.
-Bucket Name: The name of the GCS bucket where the files will be uploaded.
-Object Path/Name: Any specific naming conventions or paths required for the uploaded files.
-Authentication: If needed, the service account JSON credentials to authenticate with the bucket.
-Additionally, please let me know if there are any specific file size limits, formats, or other guidelines I should follow during the upload process.
+# 运行 Java 程序
+java -cp ".:path/to/google-cloud-storage.jar" UploadObject \
+    your-project-id \
+    your-bucket-name \
+    your-object-name \
+    path/to/your/file
 
-Thank you for your assistance. Please feel free to share any additional information or steps that might be required.
+
+
+
+
+#!/bin/bash
+
+# 设置Google Cloud认证文件路径
+export GOOGLE_APPLICATION_CREDENTIALS="/path/to/my-service-account-key.json"
+
+# 定义Java程序参数
+PROJECT_ID="my-gcp-project"
+BUCKET_NAME="my-bucket"
+OBJECT_NAME="my-object"
+FILE_PATH="/path/to/myfile.txt"
+
+# 调用Java程序并传递参数
+java -cp .:path/to/google-cloud-storage.jar Main $PROJECT_ID $BUCKET_NAME $OBJECT_NAME $FILE_PATH
+
+# 检查Java程序是否成功执行
+if [ $? -eq 0 ]; then
+  echo "File uploaded successfully!"
+else
+  echo "Failed to upload file."
+fi
+
+
+================================
+
+
+#!/bin/bash
+
+# 定义参数
+PROJECT_ID="my-gcp-project"       # 替换为你的GCP项目ID
+BUCKET_NAME="my-bucket"           # 替换为你的GCS存储桶名称
+OBJECT_NAME="my-object"           # 替换为你要上传的对象名称
+FILE_PATH="/path/to/myfile.txt"   # 替换为你要上传的文件路径
+
+# 调用Java程序并传递参数
+java -cp .:path/to/google-cloud-storage.jar Main $PROJECT_ID $BUCKET_NAME $OBJECT_NAME $FILE_PATH
+
+# 检查Java程序是否成功执行
+if [ $? -eq 0 ]; then
+  echo "File uploaded successfully!"
+else
+  echo "Failed to upload file."
+fi

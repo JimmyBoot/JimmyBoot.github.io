@@ -1,26 +1,11 @@
-import java.io.IOException;
+I am reaching out to request the necessary details for uploading files to your Google Cloud Storage (GCS) bucket.
 
-public class Main {
-    public static void main(String[] args) {
-        // 检查参数数量是否正确
-        if (args.length != 4) {
-            System.err.println("Usage: java Main <projectId> <bucketName> <objectName> <filePath>");
-            System.exit(1);
-        }
+Could you please provide the following information:
 
-        // 从命令行参数中获取值
-        String projectId = args[0];
-        String bucketName = args[1];
-        String objectName = args[2];
-        String filePath = args[3];
+Project ID: The ID of the GCP project associated with the bucket.
+Bucket Name: The name of the GCS bucket where the files will be uploaded.
+Object Path/Name: Any specific naming conventions or paths required for the uploaded files.
+Authentication: If needed, the service account JSON credentials to authenticate with the bucket.
+Additionally, please let me know if there are any specific file size limits, formats, or other guidelines I should follow during the upload process.
 
-        try {
-            // 调用UploadObject方法上传文件
-            UploadObject.uploadObject(projectId, bucketName, objectName, filePath);
-        } catch (IOException e) {
-            System.err.println("Failed to upload file: " + e.getMessage());
-            e.printStackTrace();
-            System.exit(1);
-        }
-    }
-}
+Thank you for your assistance. Please feel free to share any additional information or steps that might be required.

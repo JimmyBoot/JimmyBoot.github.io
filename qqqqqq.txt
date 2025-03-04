@@ -1,21 +1,37 @@
-#!/bin/bash
+---
+- name: Deploy to GCP
+  hosts: localhost
+  gather_facts: false
+  vars:
+    gcp_project: "my-project"
+  tasks:
+    - name: Authenticate to GCP using AAP credential
+      google.cloud.gcp_service_account:
+        project: "{{ gcp_project }}"
+        auth_kind: "serviceaccount"
+        service_account_file: "{{ lookup('file', tower.filename.service_account_json) }}"
+      register: gcp_auth
 
-# 测试模式：允许通过 TEST_DATE 覆盖当前时间
-if [ -n "$TEST_DATE" ]; then
-  current_time=$(date -d "$TEST_DATE" "+%s")
-  echo "[测试模式] 使用模拟时间: $(date -d "$TEST_DATE" '+%Y-%m-%d %H:%M:%S %Z')"
-else
-  current_time=$(date "+%s")
-fi
+    - name: Create GCS Bucket
+      google.cloud.gcp_storage_bucket:
+        name: "my-secure-bucket"
+        project: "{{ gcp_project }}"
+        auth_kind: "serviceaccount"
+        service_account_file: "{{ lookup('file', tower.filename.service_account_json) }}"
+        state: present
 
-# 示例：检查是否处于夏令时（以美国纽约时区为例）
-TZ="America/New_York"
-is_dst=$(TZ=$TZ date -d "@$current_time" +%z | cut -c1)
-if [ "$is_dst" = "+" ]; then
-  echo "当前处于夏令时 (DST)，将休眠 1 小时..."
-  sleep 3600
-else
-  echo "当前处于标准时间，无需休眠。"
-fi
 
-# 后续脚本逻辑...
+gpt
+
+- name: Create a GCP instance
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Create an instance
+      google.cloud.gcp_compute_instance:
+        name: my-instance
+        machine_type: n1-standard-1
+        zone: us-central1-a
+        project: my-project
+        auth_kind: serviceaccount
+        service_account_file: "{{ lookup('env', 'GCP_SERVICE_ACCOUNT_FILE') }}"

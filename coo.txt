@@ -1,0 +1,81 @@
+---
+- name: Deploy GCP Service Account Key to Server
+  hosts: target_servers  # 目标服务器组
+  vars:
+    target_path: "/etc/gcp_credentials/service-account.json"  # 指定目标路径
+  tasks:
+    # 创建目录（需管理员权限）
+    - name: Ensure target directory exists
+      ansible.builtin.file:
+        path: "{{ target_path | dirname }}"  # 自动提取目录路径（如 /etc/gcp_credentials）
+        state: directory
+        mode: "0700"  # 目录权限：仅所有者可访问
+        owner: "appuser"  # 指定目录所有者（需与文件用户一致）
+        group: "appgroup"
+      become: true  # 需要提权操作
+
+    # 写入 JSON 文件（通过 AAP Credentials）
+    - name: Write GCP Service Account Key
+      ansible.builtin.copy:
+        content: "{{ gcp_service_account_json }}"  # 直接引用 AAP 注入的变量
+        dest: "{{ target_path }}"
+        mode: "0600"  # 文件权限：仅所有者可读写
+        owner: "appuser"
+        group: "appgroup"
+      no_log: true  # 禁止在日志中输出任务详情（避免密钥泄露）
+      become: true
+
+
+
+---
+- name: Deploy to GCP
+  hosts: localhost
+  gather_facts: false
+  vars:
+    gcp_project: "my-project"
+  tasks:
+    - name: Authenticate to GCP using AAP credential
+      google.cloud.gcp_service_account:
+        project: "{{ gcp_project }}"
+        auth_kind: "serviceaccount"
+        service_account_file: "{{ lookup('file', tower.filename.service_account_json) }}"
+      register: gcp_auth
+
+    - name: Create GCS Bucket
+      google.cloud.gcp_storage_bucket:
+        name: "my-secure-bucket"
+        project: "{{ gcp_project }}"
+        auth_kind: "serviceaccount"
+        service_account_file: "{{ lookup('file', tower.filename.service_account_json) }}"
+        state: present
+
+
+gpt
+
+- name: Create a GCP instance
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Create an instance
+      google.cloud.gcp_compute_instance:
+        name: my-instance
+        machine_type: n1-standard-1
+        zone: us-central1-a
+        project: my-project
+        auth_kind: serviceaccount
+        service_account_file: "{{ lookup('env', 'GCP_SERVICE_ACCOUNT_FILE') }}"
+
+
+
+如果你需要在 Playbook 中手动使用 JSON 文件，可以使用 set_fact：
+
+- name: Load GCP service account key
+  hosts: localhost
+  tasks:
+    - name: Set GCP auth JSON as a variable
+      set_fact:
+        gcp_service_account: "{{ lookup('file', '/tmp/service-account.json') }}"
+    
+    - name: Use GCP service account
+      debug:
+        msg: "Loaded GCP Service Account Key"

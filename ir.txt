@@ -1,0 +1,114 @@
+import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+import javax.net.ssl.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+public class ApiClient {
+    
+    private static final String TOKEN_URL = "http://localhost:8907/token";
+    private static final String API_URL = "https://test.com/get-data?context=GCID";
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+    
+    public static void main(String[] args) throws Exception {
+        // 1. 获取JWT令牌
+        String token = getJwtToken();
+        System.out.println("获取到的令牌: " + token);
+        
+        // 2. 调用目标API，使用获取到的令牌
+        callApiWithToken(token);
+    }
+    
+    /**
+     * 获取JWT令牌
+     */
+    private static String getJwtToken() throws IOException, InterruptedException {
+        // 准备表单参数
+        Map<String, String> formData = new HashMap<>();
+        formData.put("grant_type", "client_credentials");
+        formData.put("scope", "read");
+        formData.put("audience", "https://sfrd-holiday-calendar-service.dev.gcp.cloud.com");
+        formData.put("client_id", "reply-to-url");
+        formData.put("provider", "keepie");
+        
+        // 对表单参数进行URL编码
+        String encodedFormData = formData.entrySet().stream()
+                .map(entry -> URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8) + "=" + 
+                             URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
+                .collect(Collectors.joining("&"));
+        
+        // 创建HTTP请求
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(TOKEN_URL))
+                .timeout(Duration.ofMinutes(1))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("Accept", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(encodedFormData))
+                .build();
+        
+        // 发送请求
+        HttpClient client = HttpClient.newBuilder().build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        
+        // 解析响应
+        if (response.statusCode() == 200) {
+            JsonNode jsonResponse = objectMapper.readTree(response.body());
+            // 根据实际响应结构提取token
+            // 注意：文档中提到令牌会被发送到reply-to-url，这里假设响应中包含token
+            return jsonResponse.get("access_token").asText();
+        } else {
+            throw new RuntimeException("获取令牌失败. 状态码: " + response.statusCode() + ", 响应: " + response.body());
+        }
+    }
+    
+    /**
+     * 使用JWT令牌调用目标API
+     */
+    private static void callApiWithToken(String token) throws IOException, InterruptedException, NoSuchAlgorithmException, KeyManagementException {
+        // 创建信任所有证书的SSL上下文（仅用于测试）
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, new TrustManager[]{
+            new X509TrustManager() {
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() { return null; }
+                public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {}
+                public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {}
+            }
+        }, new SecureRandom());
+        
+        // 创建HTTP客户端
+        HttpClient client = HttpClient.newBuilder()
+                .sslContext(sslContext)
+                .build();
+        
+        // 创建请求体（ID列表）
+        String requestBody = "[\"A123\",\"B456\",\"C789\"]";
+        
+        // 创建HTTP请求
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(API_URL))
+                .timeout(Duration.ofMinutes(1))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + token)
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                .build();
+        
+        // 发送请求
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        
+        // 处理响应
+        System.out.println("API调用状态码: " + response.statusCode());
+        System.out.println("API响应体: " + response.body());
+    }
+}

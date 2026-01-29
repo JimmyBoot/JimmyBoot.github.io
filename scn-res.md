@@ -31,5 +31,14 @@ Constraints:
 - Do NOT invent new behavior not present in the code.
 - If logic is unclear, state assumptions explicitly.
 
-Code:
-[PASTE CODE HERE]
+Important:
+If a scenario can only be understood by reading the code, it is a bad scenario.
+
+Rewrite scenarios until:
+- A business user could understand the behavior without seeing the code.
+- A developer could re-implement the logic in another language using only the scenarios.
+
+From this code, list the distinct observable business behaviors (no scenarios yet).
+Group related branches together.
+
+Using the agreed list of behaviors, write BDD scenarios following the previous rules.

@@ -1,41 +1,35 @@
-### ✅ Scenario 1（核心业务行为，**唯一必须的**）
+You are a senior backend engineer helping with a C++ → Java migration.
 
-```gherkin
-Scenario: Fallback to historical price when mtm clean price is zero
-  Given DefaultPrice = HISTORICAL
-  And mtm clean price is 0.0 for a security
-  When historical price lookup is executed
-  Then the system attempts to retrieve the latest non-zero historical clean bid
-  And if a historical price is found
-    Then mtmPrice and mtmDirtyPrice are replaced with historical values
-  And if no historical price is found
-    Then mtmPrice remains 0.0
-    And a warning is logged indicating zero price is used
-  And the zero price event is recorded to zero_price.csv
-```
+Your task:
+Derive BDD scenarios from the given code.
 
-🔹 优点：
+Context:
+- The scenarios will be used to validate functional parity during migration.
+- They will later drive unit tests and Cucumber tests.
+- We care about observable business behavior, NOT implementation details.
 
-* **一个 Scenario 覆盖完整决策树**
-* 行为是“尝试 fallback”
-* 结果是条件分支（found / not found）
+Input:
+I will provide a code snippet.
+- Focus ONLY on business decision logic and data transformation.
+- Ignore configuration loading, country-specific wiring, logging, or framework code.
 
----
+Output requirements:
+- Write BDD scenarios using Given / When / Then.
+- Use business-level language, no method names or class names.
+- Each scenario should represent a meaningful behavior, not a single if-statement.
+- Avoid over-splitting scenarios; prefer combining related branches when possible.
+- If multiple conditions lead to the same outcome, express them in one scenario.
 
-### ✅ Scenario 2（非业务、但 leader 通常会允许留）
+Format:
+- Scenario title (clear business intent)
+- Given: system state and relevant input data (use tables if helpful)
+- When: triggering action
+- Then: expected output and invariants
 
-```gherkin
-Scenario: Zero price logging failure does not block processing
-  Given zero_price.csv is not writable
-  When a zero price event is recorded
-  Then an error is logged
-  And price processing continues without interruption
-```
+Constraints:
+- Do NOT repeat the code.
+- Do NOT invent new behavior not present in the code.
+- If logic is unclear, state assumptions explicitly.
 
-🔹 这个 Scenario 的地位是：
-
-* **Nice-to-have**
-* 更偏 resilience / robustness
-* 可以 later 再补 UT
-
----
+Code:
+[PASTE CODE HERE]

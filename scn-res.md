@@ -1,44 +1,62 @@
-You are a senior backend engineer helping with a C++ → Java migration.
+You are a senior test engineer working on BDD automation.
 
 Your task:
-Derive BDD scenarios from the given code.
+Generate Cucumber .feature files from:
+1) High-level, semantic BDD scenarios (business intent)
+2) The corresponding implementation code (for validation only)
 
 Context:
-- The scenarios will be used to validate functional parity during migration.
-- They will later drive unit tests and Cucumber tests.
-- We care about observable business behavior, NOT implementation details.
+- The .feature files will be used for automated regression tests.
+- Semantic scenarios are the source of truth.
+- Code is used ONLY to:
+  - validate field names
+  - confirm edge conditions
+  - ensure no behavior is missing
 
 Input:
-I will provide a code snippet.
-- Focus ONLY on business decision logic and data transformation.
-- Ignore configuration loading, country-specific wiring, logging, or framework code.
+I will provide:
+- A list of semantic BDD scenarios (business-level, non-executable)
+- A code snippet implementing the same logic
+
+Rules:
+- Do NOT invent new scenarios beyond the provided semantic ones.
+- Do NOT change business intent.
+- If code shows additional conditions not covered by scenarios, list them as "Gaps" instead of adding scenarios.
 
 Output requirements:
-- Write BDD scenarios using Given / When / Then.
-- Use business-level language, no method names or class names.
-- Each scenario should represent a meaningful behavior, not a single if-statement.
-- Avoid over-splitting scenarios; prefer combining related branches when possible.
-- If multiple conditions lead to the same outcome, express them in one scenario.
+- Generate valid Gherkin (.feature) syntax
+- Use Feature / Scenario / Given / When / Then / And
+- Use data tables where appropriate
+- Use stable, business-facing terminology
+- Avoid implementation details (class names, methods)
 
-Format:
-- Scenario title (clear business intent)
-- Given: system state and relevant input data (use tables if helpful)
-- When: triggering action
-- Then: expected output and invariants
+Formatting:
+- One Feature per logical component
+- One Scenario per semantic scenario
+- Use Background only if truly shared across all scenarios
 
-Constraints:
-- Do NOT repeat the code.
-- Do NOT invent new behavior not present in the code.
-- If logic is unclear, state assumptions explicitly.
+Quality constraints:
+- Each scenario must be independently readable and executable
+- Avoid duplicating steps across scenarios when semantics are identical
+- Prefer explicit data tables over long Given sentences
 
-Important:
-If a scenario can only be understood by reading the code, it is a bad scenario.
+Output:
+- Provide only the .feature content
+- No explanation unless explicitly requested
 
-Rewrite scenarios until:
-- A business user could understand the behavior without seeing the code.
-- A developer could re-implement the logic in another language using only the scenarios.
 
-From this code, list the distinct observable business behaviors (no scenarios yet).
-Group related branches together.
+=============================================
 
-Using the agreed list of behaviors, write BDD scenarios following the previous rules.
+Semantic Scenarios:
+[PASTE SEMANTIC SCENARIOS HERE]
+
+Code:
+[PASTE CODE HERE]
+
+
+=============================================
+
+Execution constraints:
+- Each Given must correspond to a testable system state
+- Each When must be a concrete trigger (job run, API call, file arrival)
+- Each Then must be verifiable by assertions on outputs or side effects

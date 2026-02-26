@@ -1,26 +1,19 @@
-@Configuration
-public class DummyJobConfig {
+@Component
+public class JobRunner implements ApplicationRunner {
 
-    @Bean
-    public Job dummyJob(JobRepository jobRepository,
-                        PlatformTransactionManager transactionManager) {
+    private final JobLauncher jobLauncher;
+    private final Job dummyJob;
 
-        return new JobBuilder("dummyJob", jobRepository)
-                .start(dummyStep(jobRepository, transactionManager))
-                .build();
+    public JobRunner(JobLauncher jobLauncher, Job dummyJob) {
+        this.jobLauncher = jobLauncher;
+        this.dummyJob = dummyJob;
     }
 
-    @Bean
-    public Step dummyStep(JobRepository jobRepository,
-                          PlatformTransactionManager transactionManager) {
-
-        return new StepBuilder("dummyStep", jobRepository)
-                .tasklet((contribution, chunkContext) -> {
-
-                    System.out.println("=== Loader started successfully ===");
-
-                    return RepeatStatus.FINISHED;
-                }, transactionManager)
-                .build();
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        jobLauncher.run(dummyJob,
+                new JobParametersBuilder()
+                        .addLong("time", System.currentTimeMillis())
+                        .toJobParameters());
     }
 }
